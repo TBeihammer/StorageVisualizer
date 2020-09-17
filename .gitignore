@@ -1,0 +1,9 @@
+/.vs
+/build
+/config.ini
+/*.exe
+/*.pdb
+/*.vcxproj.user
+/*.ilk
+/StorageVisualizer
+/StorageVisualizer.rar
