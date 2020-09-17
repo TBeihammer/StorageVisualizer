@@ -23,7 +23,6 @@ private:
 	void showEvent(QShowEvent *e);
 	
 	QSettings* settings_ = new QSettings("config.ini", QSettings::Format::IniFormat);
-	QStorageInfo storageInfo_;
 	QString rootPath_;
 
 	double widgetWidthInPercentOfDesktop_ = -1;

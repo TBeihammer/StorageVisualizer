@@ -18,8 +18,8 @@ StorageVisualizerMainWindow::StorageVisualizerMainWindow(QWidget *parent)
 
 		settings_->beginGroup("Layout");
 		settings_->setValue("AlwaysOnTop", true);
-		settings_->setValue("WidgetWidthInPercentOfDesktop", 5);
-		settings_->setValue("WidgetHeightInPercentOfDesktop", 10);
+		settings_->setValue("WidgetWidthInPercentOfDesktop", 1);
+		settings_->setValue("WidgetHeightInPercentOfDesktop", 15);
 		settings_->endGroup();
 
 		settings_->sync();
@@ -30,8 +30,6 @@ StorageVisualizerMainWindow::StorageVisualizerMainWindow(QWidget *parent)
 	setWindowFlag(Qt::FramelessWindowHint);
 
 	rootPath_ = settings_->value("General/StorageRootPath", "C:").toString();
-	storageInfo_.setPath(rootPath_);
-
 	widgetWidthInPercentOfDesktop_ = settings_->value("Layout/WidgetWidthInPercentOfDesktop", 5).toDouble() / 100;
 	widgetHeightInPercentOfDesktop_ = settings_->value("Layout/WidgetHeightInPercentOfDesktop", 10).toDouble() / 100;
 
@@ -67,16 +65,17 @@ void StorageVisualizerMainWindow::timerEvent(QTimerEvent *e)
 	QRect fullDesktopRect = QApplication::desktop()->screenGeometry();
 	QRect availableRect = QApplication::desktop()->availableGeometry(this);
 
-	qint64 available = storageInfo_.bytesAvailable() / 1000 / 1000; //MB;
-	qint64 total = storageInfo_.bytesTotal() / 1000 / 1000; //MB
+	QStorageInfo storageInfo(rootPath_);
+	qint64 spaceFree = storageInfo.bytesFree() / 1000 / 1000; //MB;
+	qint64 spaceTotal = storageInfo.bytesTotal() / 1000 / 1000; //MB
 
-	if (total <= 0 || available <= 0)
+	if (spaceTotal <= 0 || spaceFree < 0)
 		return;
 
 	ui_.progressBar->setMinimum(0);
-	ui_.progressBar->setMaximum(total);
-	ui_.progressBar->setValue(total - available);
-	ui_.lbText->setText(rootPath_ + QString(" (%1 MB / %2 MB)").arg(available).arg(total));
+	ui_.progressBar->setMaximum(spaceTotal);
+	ui_.progressBar->setValue(spaceTotal - spaceFree);
+	ui_.lbText->setText(rootPath_ + QString(" (%1 MB / %2 MB)").arg(spaceFree).arg(spaceTotal));
 
 	resize(fullDesktopRect.width() * widgetWidthInPercentOfDesktop_, fullDesktopRect.height() * widgetHeightInPercentOfDesktop_);
 	
