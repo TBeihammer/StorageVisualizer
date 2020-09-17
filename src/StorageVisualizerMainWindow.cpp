@@ -14,12 +14,13 @@ StorageVisualizerMainWindow::StorageVisualizerMainWindow(QWidget *parent)
 		// Set some example keys since the file doesnt exist yet
 		settings_->beginGroup("General");
 		settings_->setValue("StorageRootPath", "C:");
+		settings_->setValue("StorageLimitInPercentUntilWarning", 80);
 		settings_->endGroup();
 
 		settings_->beginGroup("Layout");
 		settings_->setValue("AlwaysOnTop", true);
-		settings_->setValue("WidgetWidthInPercentOfDesktop", 1);
-		settings_->setValue("WidgetHeightInPercentOfDesktop", 15);
+		settings_->setValue("WidgetWidthInPercentOfDesktop", 15);
+		settings_->setValue("WidgetHeightInPercentOfDesktop", 1);
 		settings_->endGroup();
 
 		settings_->sync();
@@ -30,11 +31,12 @@ StorageVisualizerMainWindow::StorageVisualizerMainWindow(QWidget *parent)
 	setWindowFlag(Qt::FramelessWindowHint);
 
 	rootPath_ = settings_->value("General/StorageRootPath", "C:").toString();
+	storageLimitInPercentUntilWarning_ = settings_->value("General/StorageLimitInPercentUntilWarning", 80).toDouble() / 100;
 	widgetWidthInPercentOfDesktop_ = settings_->value("Layout/WidgetWidthInPercentOfDesktop", 5).toDouble() / 100;
 	widgetHeightInPercentOfDesktop_ = settings_->value("Layout/WidgetHeightInPercentOfDesktop", 10).toDouble() / 100;
 
+	loadStyle();
 	startTimer(5000);
-
 	connect(screen(), &QScreen::availableGeometryChanged, this, &StorageVisualizerMainWindow::onAvailableGeometryChanged);
 }
 
@@ -49,28 +51,27 @@ void StorageVisualizerMainWindow::onAvailableGeometryChanged(QRect)
 	timerEvent(nullptr);
 }
 
+
 void StorageVisualizerMainWindow::timerEvent(QTimerEvent *e)
 {
-#ifdef _DEBUG
-	QFile f("./resources/style.qss");
-	
-	if (f.open(QIODevice::ReadOnly))
-	{
-		QString style(f.readAll());
-		setStyleSheet(style);
-		f.close();
-	}
 
+#ifdef _DEBUG // Load the stylesheet constantly for Debug - purposes
+	loadStyle();
 #endif // _DEBUG
+
 	QRect fullDesktopRect = QApplication::desktop()->screenGeometry();
 	QRect availableRect = QApplication::desktop()->availableGeometry(this);
 
 	QStorageInfo storageInfo(rootPath_);
-	qint64 spaceFree = storageInfo.bytesFree() / 1000 / 1000; //MB;
-	qint64 spaceTotal = storageInfo.bytesTotal() / 1000 / 1000; //MB
+	qint64 spaceFree = storageInfo.bytesFree() / 1024 / 1024; //MB;
+	qint64 spaceTotal = storageInfo.bytesTotal() / 1024 / 1024; //MB
 
-	if (spaceTotal <= 0 || spaceFree < 0)
+	if (spaceTotal <= 0 || spaceFree < 0 || spaceFree > spaceTotal)
 		return;
+
+	bool isWarning = ((double)(spaceTotal - spaceFree) / (double) spaceTotal) >= storageLimitInPercentUntilWarning_;
+	ui_.progressBar->setProperty("warning", isWarning);
+	ui_.progressBar->setStyleSheet(style_);
 
 	ui_.progressBar->setMinimum(0);
 	ui_.progressBar->setMaximum(spaceTotal);
@@ -87,4 +88,15 @@ void StorageVisualizerMainWindow::showEvent(QShowEvent *e)
 {
 	timerEvent(nullptr);
 	return QMainWindow::showEvent(e);
+}
+
+void StorageVisualizerMainWindow::loadStyle()
+{
+	QFile f("./resources/style.qss");
+
+	if (f.open(QIODevice::ReadOnly))
+	{
+		style_ = QString(f.readAll());
+		f.close();
+	}
 }

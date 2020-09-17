@@ -1,0 +1,8 @@
+QProgressBar::chunk[warning=false]
+{
+    background-color: green /*#05B8CC;*/
+}
+QProgressBar::chunk[warning=true]
+{
+	background-color: red /*#05B8CC;*/
+}

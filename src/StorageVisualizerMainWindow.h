@@ -21,10 +21,13 @@ private:
     Ui::StorageVisualizerMainWindowClass ui_;
 	void timerEvent(QTimerEvent *e);
 	void showEvent(QShowEvent *e);
+	void loadStyle();
 	
 	QSettings* settings_ = new QSettings("config.ini", QSettings::Format::IniFormat);
 	QString rootPath_;
+	QString style_;
 
+	double storageLimitInPercentUntilWarning_ = -1;
 	double widgetWidthInPercentOfDesktop_ = -1;
 	double widgetHeightInPercentOfDesktop_ = -1;
 };
