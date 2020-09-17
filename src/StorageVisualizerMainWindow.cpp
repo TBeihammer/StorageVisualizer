@@ -36,7 +36,7 @@ StorageVisualizerMainWindow::StorageVisualizerMainWindow(QWidget *parent)
 	widgetHeightInPercentOfDesktop_ = settings_->value("Layout/WidgetHeightInPercentOfDesktop", 10).toDouble() / 100;
 
 	loadStyle();
-	startTimer(5000);
+	startTimer(1000);
 	connect(screen(), &QScreen::availableGeometryChanged, this, &StorageVisualizerMainWindow::onAvailableGeometryChanged);
 }
 
@@ -69,14 +69,15 @@ void StorageVisualizerMainWindow::timerEvent(QTimerEvent *e)
 	if (spaceTotal <= 0 || spaceFree < 0 || spaceFree > spaceTotal)
 		return;
 
-	bool isWarning = ((double)(spaceTotal - spaceFree) / (double) spaceTotal) >= storageLimitInPercentUntilWarning_;
+	double filledUp = ((double)(spaceTotal - spaceFree) / (double)spaceTotal);
+	bool isWarning = filledUp >= storageLimitInPercentUntilWarning_;
 	ui_.progressBar->setProperty("warning", isWarning);
 	ui_.progressBar->setStyleSheet(style_);
 
 	ui_.progressBar->setMinimum(0);
 	ui_.progressBar->setMaximum(spaceTotal);
 	ui_.progressBar->setValue(spaceTotal - spaceFree);
-	ui_.lbText->setText(rootPath_ + QString(" (%1 MB / %2 MB)").arg(spaceFree).arg(spaceTotal));
+	ui_.lbText->setText(rootPath_ + QString(" (%1 MB / %2 MB) (%3%)").arg(spaceTotal - spaceFree).arg(spaceTotal).arg(QString::number(filledUp * 100, 'f', 2)));
 
 	resize(fullDesktopRect.width() * widgetWidthInPercentOfDesktop_, fullDesktopRect.height() * widgetHeightInPercentOfDesktop_);
 	
