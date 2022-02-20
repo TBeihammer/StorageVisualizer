@@ -44,5 +44,6 @@
     <None Include="resources\style.qss">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="README.md" />
   </ItemGroup>
 </Project>

@@ -1,5 +1,9 @@
 # StorageVisualizer
 ![](./resources/images/screenshot.PNG)
+![](./resources/images/screenshot2.PNG)
+
+# Prerequisites
+* Qt 5.15.0
 
 # Setup
 The solution (Visual Studio 2015) makes use of a QTDIR Environment - variable. Set this to your QT - installation, for instance: QTDIR=C:\Qt\5.15.0\msvc2015_64

@@ -24,6 +24,7 @@
     <QtMoc Include="src\StorageVisualizerMainWindow.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="README.md" />
     <None Include="resources\style.qss" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
