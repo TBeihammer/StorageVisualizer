@@ -3,6 +3,7 @@
 #include <QDesktopWidget>
 #include <QScreen>
 #include <minmax.h>
+#include <QWindowStateChangeEvent>
 
 StorageVisualizerMainWindow::StorageVisualizerMainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -18,7 +19,6 @@ StorageVisualizerMainWindow::StorageVisualizerMainWindow(QWidget *parent)
 		settings_->endGroup();
 
 		settings_->beginGroup("Layout");
-		settings_->setValue("AlwaysOnTop", true);
 		settings_->setValue("WidgetWidthInPercentOfDesktop", 15);
 		settings_->setValue("WidgetHeightInPercentOfDesktop", 1);
 		settings_->endGroup();
@@ -26,10 +26,11 @@ StorageVisualizerMainWindow::StorageVisualizerMainWindow(QWidget *parent)
 		settings_->sync();
 	}
 
-	if (settings_->value("Layout/AlwaysOnTop", true).toBool())
-		setWindowFlag(Qt::WindowStaysOnTopHint);
+	setWindowFlag(Qt::WindowStaysOnTopHint);
 	setWindowFlag(Qt::FramelessWindowHint);
-
+	setWindowFlag(Qt::Tool);
+	setAttribute(Qt::WA_Hover, true);
+	
 	rootPath_ = settings_->value("General/StorageRootPath", "C:").toString();
 	storageLimitInPercentUntilWarning_ = settings_->value("General/StorageLimitInPercentUntilWarning", 80).toDouble() / 100;
 	widgetWidthInPercentOfDesktop_ = settings_->value("Layout/WidgetWidthInPercentOfDesktop", 5).toDouble() / 100;
@@ -52,6 +53,18 @@ void StorageVisualizerMainWindow::onAvailableGeometryChanged(QRect)
 }
 
 
+void StorageVisualizerMainWindow::enterEvent(QEvent * event)
+{
+	setWindowOpacity(1);
+	QWidget::enterEvent(event);
+}
+
+void StorageVisualizerMainWindow::leaveEvent(QEvent * event)
+{
+	setWindowOpacity(0.75);
+	QWidget::leaveEvent(event);
+}
+
 void StorageVisualizerMainWindow::timerEvent(QTimerEvent *e)
 {
 
@@ -72,7 +85,7 @@ void StorageVisualizerMainWindow::timerEvent(QTimerEvent *e)
 	double filledUp = ((double)(spaceTotal - spaceFree) / (double)spaceTotal);
 	bool isWarning = filledUp >= storageLimitInPercentUntilWarning_;
 	ui_.progressBar->setProperty("warning", isWarning);
-	ui_.progressBar->setStyleSheet(style_);
+	this->setStyleSheet(style_);
 
 	ui_.progressBar->setMinimum(0);
 	ui_.progressBar->setMaximum(spaceTotal);
@@ -101,3 +114,5 @@ void StorageVisualizerMainWindow::loadStyle()
 		f.close();
 	}
 }
+
+

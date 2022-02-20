@@ -16,6 +16,8 @@ public:
 
 private slots:
 	void onAvailableGeometryChanged(QRect);
+	void enterEvent(QEvent * event);
+	void leaveEvent(QEvent * event);
 
 private:
     Ui::StorageVisualizerMainWindowClass ui_;
